@@ -22,17 +22,43 @@ global with sharing class WebhookListener {
         response.addHeader('Content-Type', 'application/json');
         response.responseBody = Blob.valueOf('{"success":true, event:"UNKNOWN"}');
         */
-
+        Pusher ps;
+        Head_commit hc;
         JSONParser parser = JSON.createParser(request.requestBody.toString());
         while(parser.nextToken() != null) {
-            System.debug('nextToken = ' + parser.nextToken());
+            if(parser.getText() == 'pusher') {
+                parser.nextToken();
+                ps = (Pusher)parser.readValueAs(Pusher.class);
+                System.debug(System.LoggingLevel.DEBUG, 'ps ' + ps);
+            }
+
+            if(parser.getText() == 'head_commit') {
+                parser.nextToken();
+                hc = (Head_commit)parser.readValueAs(Head_commit.class);
+                System.debug(System.LoggingLevel.DEBUG, 'hc ' + hc);
+            }
         }
 
 
     }
 
-    @HttpGet
-    global static String doGet() {
-        return '{"message":"Hello from stripe webhook v1"}';
+    public class Pusher {
+        public String name;
+        public String email;
+    }
+
+    public class Head_commit {
+        public String id;
+        public String tree_id;
+        public String message;
+        public String timestamp;
+        public String url;
+        public author author;
+    }
+
+    public class author {
+        public String name;
+        public String email;
+        public String username;
     }
 }
