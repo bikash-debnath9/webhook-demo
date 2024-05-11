@@ -29,7 +29,7 @@ global with sharing class WebhookListener {
         if(hashValue == hmacString) {
             System.debug(System.LoggingLevel.DEBUG, 'Secter value matched and source can be trusted');
 
-            Pusher ps;
+        Pusher ps;
         Head_commit hc;
         JSONParser parser = JSON.createParser(request.requestBody.toString());
         while(parser.nextToken() != null) {
