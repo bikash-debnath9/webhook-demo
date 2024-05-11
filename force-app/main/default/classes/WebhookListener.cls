@@ -15,13 +15,6 @@ global with sharing class WebhookListener {
         Blob body = request.requestBody;
         System.debug(System.LoggingLevel.DEBUG, body.toString());
 
-        /*
-        String responseStr = RestContext.request.requestBody.toString();
-        RestResponse response = RestContext.response;
-        response.statusCode = 200;
-        response.addHeader('Content-Type', 'application/json');
-        response.responseBody = Blob.valueOf('{"success":true, event:"UNKNOWN"}');
-        */
         Pusher ps;
         Head_commit hc;
         JSONParser parser = JSON.createParser(request.requestBody.toString());
@@ -39,7 +32,20 @@ global with sharing class WebhookListener {
             }
         }
 
+        response.statusCode = 200;
+        response.addHeader('Content-Type', 'application/json');
+        response.responseBody = Blob.valueOf(JSON.serialize(new WebhookResponse('Success', 'Processed Successfully')));
 
+    }
+
+    public class WebhookResponse {
+        public String type;
+        public String message;
+
+        public WebhookResponse(String type, String message) {
+            this.type = type;
+            this.message = message;
+        }
     }
 
     public class Pusher {
