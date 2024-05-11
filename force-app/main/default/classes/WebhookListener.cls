@@ -39,11 +39,11 @@ global with sharing class WebhookListener {
     }
 
     public class WebhookResponse {
-        public String type;
+        public String status;
         public String message;
 
-        public WebhookResponse(String type, String message) {
-            this.type = type;
+        public WebhookResponse(String status, String message) {
+            this.status = status;
             this.message = message;
         }
     }
