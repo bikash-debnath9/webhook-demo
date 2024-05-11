@@ -7,15 +7,29 @@
  */
 @RestResource(urlMapping='/github/webhook/v1/*')
 global with sharing class WebhookListener {
+    /**
+     * webhook secret - githubToSalesforce
+     */
+
     @HttpPost
     global static void handleNotification() {
         RestResponse response = RestContext.response;
         RestRequest request = RestContext.request;
 
+        String hashValue = request.headers.get('X-Hub-Signature-256');
+        System.debug(System.LoggingLevel.DEBUG, 'hashValue ' + hashValue);
+
         Blob body = request.requestBody;
         System.debug(System.LoggingLevel.DEBUG, body.toString());
 
-        Pusher ps;
+        Blob hmac = Crypto.generateMac('hmacSHA256', body, Blob.valueOf('githubToSalesforce'));
+        System.debug(System.LoggingLevel.DEBUG, 'hmac ' + EncodingUtil.convertToHex(hmac));
+
+        String hmacString = 'sha256='+EncodingUtil.convertToHex(hmac);
+        if(hashValue == hmacString) {
+            System.debug(System.LoggingLevel.DEBUG, 'Secter value matched and source can be trusted');
+
+            Pusher ps;
         Head_commit hc;
         JSONParser parser = JSON.createParser(request.requestBody.toString());
         while(parser.nextToken() != null) {
@@ -35,7 +49,11 @@ global with sharing class WebhookListener {
         response.statusCode = 200;
         response.addHeader('Content-Type', 'application/json');
         response.responseBody = Blob.valueOf(JSON.serialize(new WebhookResponse('Success', 'Processed Successfully')));
-
+        } else {
+            response.statusCode = 401;
+            response.addHeader('Content-Type', 'application/json');
+            response.responseBody = Blob.valueOf(JSON.serialize(new WebhookResponse('Failure', 'Not a valid sender')));
+        }
     }
 
     public class WebhookResponse {
